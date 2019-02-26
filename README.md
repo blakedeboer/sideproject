@@ -1,0 +1,1 @@
+to start backend run: `./gradlew bootRun`
