@@ -4,7 +4,7 @@ import com.sideproject.BudgetCategory;
 import com.sideproject.CreditCardTransaction;
 import com.sideproject.CreditCardTransactionRepository;
 import com.sideproject.DemoApplication;
-import org.hamcrest.core.Is;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.sql.Date;
 
-import static org.hamcrest.core.Is.*;
+import static org.hamcrest.core.Is.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -44,14 +44,27 @@ public class TransactionAPITest {
     public void givenCreditCardTransactions_whenGetTransactions_thenTransactionHasCorrectProperties() throws Exception {
         createTestTransaction();
 
-        String transactionsJSONPath = "_embedded.creditCardTransactions.[0]";
+        String firstTransactionsJSONPath = "_embedded.creditCardTransactions.[0]";
         mvc.perform(get("/api/creditCardTransactions").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath(transactionsJSONPath + ".vendor", is("b&b")))
-                .andExpect(jsonPath(transactionsJSONPath + ".description", is("food")))
-                .andExpect(jsonPath(transactionsJSONPath + ".amount", is(10.12)))
-                .andExpect(jsonPath(transactionsJSONPath + ".budgetCategory", is("RESTAURANT")))
-                .andExpect(jsonPath(transactionsJSONPath + ".date", is("2019-03-19")));
+                .andExpect(jsonPath(firstTransactionsJSONPath + ".vendor", is("b&b")))
+                .andExpect(jsonPath(firstTransactionsJSONPath + ".description", is("food")))
+                .andExpect(jsonPath(firstTransactionsJSONPath + ".amount", is(10.12)))
+                .andExpect(jsonPath(firstTransactionsJSONPath + ".budgetCategory", is("RESTAURANT")))
+                .andExpect(jsonPath(firstTransactionsJSONPath + ".date", is("2019-03-19")));
     }
+
+    @Test
+    public void givenCreditCardTransactions_whenGetTransactions_thenTransactionsHasTheCorrespondingNumberOfElements()
+            throws Exception {
+        createTestTransaction();
+        createTestTransaction();
+
+        String transactionsJSONPath = "_embedded.creditCardTransactions";
+
+        mvc.perform(get("/api/creditCardTransactions").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath(transactionsJSONPath, Matchers.hasSize(2)));
+    }
+
 
     private void createTestTransaction() {
         Date date = Date.valueOf("2019-03-19");
